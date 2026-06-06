@@ -5,7 +5,15 @@ Runs migrations using DATABASE_URL from environment, then starts uvicorn.
 Done in Python rather than shell to avoid Procfile shell-substitution quirks.
 """
 
+# TEMPORARY DEBUG: print all environment variables the container can see
 import os
+print("=== ALL ENV VARS THE CONTAINER SEES ===")
+for k in sorted(os.environ.keys()):
+    v = os.environ[k]
+    # Hide secret values but show variable names and lengths
+    masked = v[:6] + "..." + str(len(v)) + "chars" if len(v) > 10 else v
+    print(f"  {k} = {masked}")
+print("=== END ENV VARS ===")
 import subprocess
 import sys
 
