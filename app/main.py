@@ -1,8 +1,5 @@
 """
 nest API — main application entry point.
-
-This module creates the FastAPI app, configures middleware (CORS for the frontend),
-manages the database connection lifecycle, and registers route modules.
 """
 
 from contextlib import asynccontextmanager
@@ -17,11 +14,9 @@ from app.routes import listings, auth, me, shortlist, events
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Run startup and shutdown logic."""
-    # Startup: open the database connection pool
     await connect_db()
     print(f"nest API started in {settings.environment} mode")
     yield
-    # Shutdown: close the pool cleanly
     await disconnect_db()
     print("nest API shut down")
 
@@ -34,11 +29,18 @@ app = FastAPI(
 )
 
 
-# CORS: allow the Next.js frontend (running on localhost:3000) to call us.
-# In production we'd lock this down to the actual domain.
+# CORS: allow localhost for dev, plus the deployed frontend URL in production.
+allowed_origins = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+]
+if settings.frontend_url:
+    # Trim trailing slash if present — common copy/paste mistake.
+    allowed_origins.append(settings.frontend_url.rstrip("/"))
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],
+    allow_origins=allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

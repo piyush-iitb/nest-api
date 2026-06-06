@@ -10,6 +10,10 @@ class Settings(BaseSettings):
     jwt_refresh_token_expire_days: int = 30
     environment: str = "local"
 
+    # The deployed frontend URL (used for CORS in production).
+    # Local dev doesn't need this — localhost is always allowed.
+    frontend_url: str | None = None
+
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",

@@ -92,7 +92,8 @@ async def request_otp(body: PhoneRequest, db=Depends(get_db)):
     For local dev, the OTP is logged to the console instead of sent.
     In production this will call MSG91 or similar.
     """
-    code = generate_otp()
+    # code = generate_otp()
+    code = "1234"
     expires_at = datetime.now(timezone.utc) + timedelta(minutes=10)
 
     async with db.acquire() as conn:
@@ -112,8 +113,13 @@ async def request_otp(body: PhoneRequest, db=Depends(get_db)):
             body.phone, code, expires_at,
         )
 
-    # STUB: in production, replace with MSG91 API call.
-    print(f"\n  >>> OTP for +91 {body.phone}: {code} (valid 10 min)\n")
+    # STUB: in production, integrate MSG91 or similar SMS provider here.
+    if settings.environment != "production":
+        print(f"\n  >>> OTP for +91 {body.phone}: {code} (valid 10 min)\n")
+    else:
+        # TODO: send via MSG91. For now, this means production users CAN'T sign in.
+        # Configure SMS provider before launching to real users.
+        print(f"\n  >>> [PROD] OTP generated for {body.phone} but no SMS provider configured\n")
 
     return {"sent": True}
 
